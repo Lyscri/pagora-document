@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía Completa: Pasarela de Pagos desde Cero</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;800&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #111318;
+    --bg3: #181c24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --accent: #4f9cf9;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --teal: #14b8a6;
+    --pink: #ec4899;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR NAV */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: 240px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 28px 0 40px;
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .sidebar-logo h1 {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .nav-section { padding: 8px 24px 4px; }
+  .nav-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(79,156,249,0.12); color: var(--accent); }
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; opacity: 0.4; flex-shrink: 0;
+  }
+  .nav-item.active .nav-dot { opacity: 1; }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: 240px;
+    padding: 0 48px 80px;
+    max-width: 960px;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 60px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+  .hero-kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-desc {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+  .hero-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    border: 1px solid;
+  }
+  .pill-blue { border-color: rgba(79,156,249,0.4); color: var(--accent); background: rgba(79,156,249,0.07); }
+  .pill-green { border-color: rgba(16,185,129,0.4); color: var(--green); background: rgba(16,185,129,0.07); }
+  .pill-purple { border-color: rgba(124,58,237,0.4); color: #a78bfa; background: rgba(124,58,237,0.07); }
+  .pill-amber { border-color: rgba(245,158,11,0.4); color: var(--amber); background: rgba(245,158,11,0.07); }
+
+  /* SECTIONS */
+  .section { margin-bottom: 72px; scroll-margin-top: 32px; }
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg3);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .section h2 {
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+  }
+  h3 {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 12px;
+  }
+  p { color: var(--muted); margin-bottom: 12px; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .card p { margin: 0; font-size: 14px; }
+
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .cards-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+
+  /* DEFINITION TABLE */
+  .def-table { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 24px; }
+  .def-row { display: grid; grid-template-columns: 180px 1fr; border-bottom: 1px solid var(--border); }
+  .def-row:last-child { border-bottom: none; }
+  .def-term {
+    padding: 14px 18px;
+    background: var(--bg3);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    display: flex; align-items: flex-start;
+  }
+  .def-body {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--muted);
+    background: var(--bg2);
+  }
+  .def-body strong { display: block; color: var(--text); margin-bottom: 3px; font-size: 13px; }
+
+  /* CODE BLOCKS */
+  .code-block {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #a3e635;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 16px 0;
+    white-space: pre;
+  }
+  .code-block .kw { color: #7c3aed; }
+  .code-block .str { color: #f59e0b; }
+  .code-block .cm { color: #4b5563; }
+  .code-block .fn { color: #4f9cf9; }
+
+  /* FLOW STEPS */
+  .flow-step {
+    display: flex; gap: 20px; margin-bottom: 20px;
+    position: relative;
+  }
+  .flow-step::before {
+    content: ''; position: absolute;
+    left: 18px; top: 44px; bottom: -20px;
+    width: 1px; background: var(--border);
+  }
+  .flow-step:last-child::before { display: none; }
+  .step-num {
+    width: 36px; height: 36px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
+  .step-content { flex: 1; padding-top: 4px; }
+  .step-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--muted); margin: 0; }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 100px; font-size: 12px;
+    font-family: var(--mono);
+  }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .badge-green { color: var(--green); background: rgba(16,185,129,0.1); }
+  .badge-red { color: var(--red); background: rgba(239,68,68,0.1); }
+  .badge-amber { color: var(--amber); background: rgba(245,158,11,0.1); }
+  .badge-blue { color: var(--accent); background: rgba(79,156,249,0.1); }
+
+  /* ALERT BOXES */
+  .alert {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-left: 3px solid;
+    font-size: 14px;
+  }
+  .alert-warning { background: rgba(245,158,11,0.07); border-color: var(--amber); color: #d97706; }
+  .alert-danger { background: rgba(239,68,68,0.07); border-color: var(--red); color: #dc2626; }
+  .alert-info { background: rgba(79,156,249,0.07); border-color: var(--accent); color: var(--accent); }
+  .alert-success { background: rgba(16,185,129,0.07); border-color: var(--green); color: var(--green); }
+  .alert strong { color: inherit; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px; color: var(--muted);
+    align-items: flex-start;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+    font-size: 10px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .check-icon.done { background: var(--green); border-color: var(--green); color: #000; }
+  .checklist li.done-item { color: #3a4a3a; text-decoration: line-through; }
+
+  /* DB TABLE */
+  .db-table {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .db-table-header {
+    background: var(--bg3);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .db-row {
+    display: grid;
+    grid-template-columns: 160px 120px 1fr;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .db-row:last-child { border-bottom: none; }
+  .db-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .db-cell { padding: 8px 16px; color: var(--muted); }
+  .db-cell:first-child { color: var(--text); }
+  .db-cell .pk { color: var(--amber); font-size: 9px; }
+  .db-cell .fk { color: var(--teal); font-size: 9px; }
+  .db-cell .type { color: #a78bfa; }
+
+  /* ARCH DIAGRAM */
+  .arch-layer {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .arch-layer-label {
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .arch-nodes { display: flex; gap: 10px; flex-wrap: wrap; }
+  .arch-node {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+  .arch-node.highlight { border-color: rgba(79,156,249,0.5); color: var(--accent); }
+  .arch-arrow { text-align: center; color: var(--muted); font-size: 18px; margin: 6px 0; }
+
+  /* PHASE TIMELINE */
+  .phase {
+    display: grid; grid-template-columns: 100px 1fr;
+    gap: 20px; margin-bottom: 24px;
+    border-left: 2px solid var(--border);
+    padding-left: 20px;
+    position: relative;
+  }
+  .phase::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 18px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .phase-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+  .phase-weeks {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .phase h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .phase ul { list-style: none; }
+  .phase ul li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 2px 0;
+    display: flex; gap: 6px;
+  }
+  .phase ul li::before { content: '—'; color: var(--border2); }
+
+  /* STACK CARD */
+  .stack-item {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .stack-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .stack-info { flex: 1; }
+  .stack-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .stack-why { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
+  .stack-meta { margin-left: auto; text-align: right; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* ERROR TABLE */
+  .error-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .error-header {
+    display: flex; gap: 12px; align-items: center;
+    padding: 12px 16px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .error-body { padding: 12px 16px; }
+  .error-body p { font-size: 13px; margin-bottom: 6px; }
+  .error-action { font-size: 12px; font-family: var(--mono); color: var(--accent); }
+
+  /* HORIZONTAL SCROLL TABLE */
+  .table-wrap { overflow-x: auto; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--bg3);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  td strong { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+
+  /* TAG */
+  .tag-inline {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-left: 240px;
+    padding: 24px 48px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px 20px 60px; }
+    .footer { margin-left: 0; padding: 20px; }
+    .cards-grid, .cards-grid-3 { grid-template-columns: 1fr; }
+    .def-row { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="tag">Arquitectura Fintech</span>
+    <h1>Pasarela de Pagos</h1>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Fundamentos</div>
+    <a class="nav-item" href="#resumen"><span class="nav-dot"></span>Resumen ejecutivo</a>
+    <a class="nav-item" href="#conceptos"><span class="nav-dot"></span>Conceptos clave</a>
+    <a class="nav-item" href="#tecnico"><span class="nav-dot"></span>Req. técnicos</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Diseño</div>
+    <a class="nav-item" href="#arquitectura"><span class="nav-dot"></span>Arquitectura</a>
+    <a class="nav-item" href="#seguridad"><span class="nav-dot"></span>Seguridad</a>
+    <a class="nav-item" href="#basedatos"><span class="nav-dot"></span>Base de datos</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Operación</div>
+    <a class="nav-item" href="#flujo"><span class="nav-dot"></span>Flujo de pagos</a>
+    <a class="nav-item" href="#errores"><span class="nav-dot"></span>Casos de error</a>
+    <a class="nav-item" href="#cumplimiento"><span class="nav-dot"></span>Cumplimiento</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Implementación</div>
+    <a class="nav-item" href="#stack"><span class="nav-dot"></span>Stack tecnológico</a>
+    <a class="nav-item" href="#plan"><span class="nav-dot"></span>Plan de trabajo</a>
+    <a class="nav-item" href="#checklist"><span class="nav-dot"></span>Checklist final</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-kicker">Guía completa · Arquitectura Senior</div>
+  <h1>Construir una<br><span>Pasarela de Pagos</span><br>desde cero</h1>
+  <p class="hero-desc">Todo lo que necesitas saber para diseñar, implementar y escalar una pasarela de pagos profesional. Desde la arquitectura hasta el checklist de producción.</p>
+  <div class="hero-pills">
+    <span class="pill pill-blue">PCI DSS</span>
+    <span class="pill pill-green">Microservicios</span>
+    <span class="pill pill-purple">Tokenización</span>
+    <span class="pill pill-amber">Idempotencia</span>
+    <span class="pill pill-blue">Webhooks</span>
+    <span class="pill pill-green">Conciliación</span>
+    <span class="pill pill-purple">Anti-fraude</span>
+    <span class="pill pill-amber">3D Secure</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 1. RESUMEN EJECUTIVO -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="resumen">
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2>Resumen Ejecutivo</h2>
+  </div>
+
+  <p>Una pasarela de pagos (payment gateway) es el software que <strong>orquesta la autorización, captura y liquidación de dinero</strong> entre un comprador, un comercio, bancos y redes de tarjetas. Actúa como intermediario de confianza, cifrando datos sensibles, enrutando transacciones y manteniendo trazabilidad completa.</p>
+
+  <div class="alert alert-warning">
+    <strong>Decisión crítica #1:</strong> ¿Construyes tu propia infraestructura de procesamiento o integras un proveedor (Stripe, Braintree, Adyen)? La diferencia determina costos, tiempo, nivel de responsabilidad PCI y viabilidad legal. En el 80% de los casos, integrar es más inteligente que construir desde cero.
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-title">🏗️ Construir propia infraestructura</div>
+      <p>Control total, márgenes mejores a escala. Requiere licencias financieras, certificación PCI Level 1, equipo de +15 personas, 18-36 meses, inversión de $500K–$2M+. Apto para fintechs, bancos, grandes plataformas.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔌 Integrar proveedor existente</div>
+      <p>Time-to-market de 2-8 semanas. Sin licencias de procesamiento. Costos por transacción (1.5%–2.9%). PCI SAQ A o A-EP. Ideal para e-commerce, SaaS, marketplaces, startups.</p>
+    </div>
+  </div>
+
+  <div class="alert alert-info">
+    <strong>Decisión crítica #2:</strong> El país donde operas determina las normas aplicables: en EE.UU. rige el modelo Visa/MC directamente; en Europa aplica PSD2 + SCA obligatoria; en Latinoamérica cada país tiene su adquirente local y regulación propia (CNBV en México, BACEN en Brasil, CMF en Chile).
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 2. CONCEPTOS CLAVE -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="conceptos">
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2>Conceptos Clave</h2>
+  </div>
+
+  <h3>Diferencias entre los actores del ecosistema</h3>
+
+  <div class="def-table">
+    <div class="def-row">
+      <div class="def-term">Gateway</div>
+      <div class="def-body">
+        <strong>La "tubería" técnica</strong>
+        Software que recibe los datos del pago desde el frontend, los cifra, los envía al procesador y devuelve la respuesta. No mueve dinero. Ej.: Stripe, Braintree, PayU.
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">Procesador de pagos</div>
+      <div class="def-body">
+        <strong>El cerebro del enrutamiento</strong>
+        Comunica a las redes de tarjetas (Visa/MC) con los bancos. Verifica fondos, gestiona autorización. Puede ser el mismo que el gateway o separado. Ej.: TSYS, First Data, Adyen.
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">Adquirente</div>
+      <div class="def-body">
+        <strong>El banco del comercio</strong>
+        Institución financiera que tiene contrato con el comercio para aceptar pagos con tarjeta. Asume el riesgo de chargebacks. Ej.: Bancomer (México), Getnet (Brasil), BBVA Merchant.
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">Emisor</div>
+      <div class="def-body">
+        <strong>El banco del cliente</strong>
+        Banco que emitió la tarjeta del comprador. Aprueba o rechaza la transacción verificando fondos, límites y reglas anti-fraude. Ej.: HSBC, Citibank, Nubank.
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">Merchant account</div>
+      <div class="def-body">
+        <strong>Cuenta de tránsito del comercio</strong>
+        Cuenta especial (no bancaria estándar) donde se depositan los fondos autorizados antes de la liquidación. Separada de la cuenta corriente del negocio. Puede ser propia o usar la del proveedor (aggregator model).
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">Pasarela de pagos</div>
+      <div class="def-body">
+        <strong>El sistema completo</strong>
+        Término paraguas que engloba gateway + procesamiento + UX de pago + gestión de estados + reportes + seguridad. Lo que construimos en esta guía.
+      </div>
+    </div>
+  </div>
+
+  <h3>Flujo de autorización simplificado</h3>
+  <div class="code-block">Cliente paga → <span class="fn">Gateway</span> cifra datos → <span class="fn">Procesador</span> envía a red (Visa/MC)
+    → Red contacta <span class="fn">Banco Emisor</span> → Emisor aprueba/rechaza
+    → Respuesta regresa por la misma cadena → <span class="fn">Gateway</span> notifica al comercio
+    <span class="cm">// Todo esto ocurre en &lt; 2 segundos</span>
+
+Liquidación (D+1 a D+3):
+    <span class="fn">Adquirente</span> agrupa transacciones del día → envía a red
+    → Red cobra/paga diferencias → fondos llegan a <span class="fn">Merchant Account</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 3. REQUISITOS TÉCNICOS -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="tecnico">
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2>Requisitos Técnicos</h2>
+  </div>
+
+  <h3>Backend</h3>
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-title">API REST/GraphQL</div>
+      <p>Endpoints para crear pagos, capturar, reembolsar, consultar estado. Versioned: <span class="tag-inline">/v1/payments</span>. Stateless. Autenticación por API keys + JWT.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Motor de estados</div>
+      <p>Máquina de estados para cada transacción: <span class="tag-inline">created → authorized → captured → settled → refunded</span>. Nunca se salta un estado.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Idempotencia</div>
+      <p>Cada petición de pago lleva un <span class="tag-inline">Idempotency-Key</span> único. Si la misma key llega dos veces, se devuelve el resultado original sin reprocesar. Previene cobros duplicados por reintentos.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Reintentos con backoff</div>
+      <p>Para llamadas al procesador: exponential backoff con jitter. Máx. 3 intentos. Nunca reintentes pagos ya capturados. Circuit breaker para fallos masivos del proveedor.</p>
+    </div>
+  </div>
+
+  <h3>Idempotencia — implementación</h3>
+  <div class="code-block"><span class="cm">// Middleware de idempotencia (Node.js / Express)</span>
+<span class="kw">async function</span> <span class="fn">idempotencyMiddleware</span>(req, res, next) {
+  <span class="kw">const</span> key = req.headers[<span class="str">'idempotency-key'</span>];
+  <span class="kw">if</span> (!key) <span class="kw">return</span> res.status(400).json({ error: <span class="str">'Idempotency-Key required'</span> });
+
+  <span class="kw">const</span> cached = <span class="kw">await</span> redis.<span class="fn">get</span>(<span class="str">`idem:</span>${key}<span class="str">`</span>);
+  <span class="kw">if</span> (cached) <span class="kw">return</span> res.status(200).json(JSON.<span class="fn">parse</span>(cached)); <span class="cm">// replay</span>
+
+  res.<span class="fn">on</span>(<span class="str">'finish'</span>, <span class="kw">async</span> () => {
+    <span class="kw">if</span> (res.statusCode < 500) {
+      <span class="kw">await</span> redis.<span class="fn">setex</span>(<span class="str">`idem:</span>${key}<span class="str">`</span>, 86400, JSON.<span class="fn">stringify</span>(res.locals.body));
+    }
+  });
+  <span class="fn">next</span>();
+}</div>
+
+  <h3>Webhooks</h3>
+  <div class="flow-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <div class="step-title">Recepción</div>
+      <p class="step-desc">Responder 200 OK inmediatamente. Nunca proceses síncronamente en el webhook handler. Encola el evento en Redis/SQS primero.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <div class="step-title">Verificación de firma</div>
+      <p class="step-desc">Validar HMAC-SHA256 del payload contra el secret compartido. Rechazar si difiere. Verificar timestamp (±5 minutos) para prevenir replay attacks.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <div class="step-title">Deduplicación</div>
+      <p class="step-desc">Guardar <span class="tag-inline">event_id</span> en Redis/DB. Si ya existe, ignorar y responder 200. Los proveedores pueden enviar el mismo evento hasta 3 veces.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <div class="step-title">Procesamiento asíncrono</div>
+      <p class="step-desc">Worker consume la cola, actualiza estado en DB, dispara lógica de negocio (envío de email, activación de suscripción, etc.).</p>
+    </div>
+  </div>
+
+  <h3>Conciliación</h3>
+  <p>Proceso diario que compara lo que registró tu sistema vs. lo que reporta el proveedor/banco.</p>
+  <div class="code-block"><span class="cm">-- Query de conciliación diaria</span>
+<span class="kw">SELECT</span>
+  t.id, t.amount, t.status <span class="kw">AS</span> local_status,
+  r.amount <span class="kw">AS</span> provider_amount, r.status <span class="kw">AS</span> provider_status,
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> t.amount != r.amount <span class="kw">THEN</span> <span class="str">'AMOUNT_MISMATCH'</span>
+    <span class="kw">WHEN</span> t.status != r.status <span class="kw">THEN</span> <span class="str">'STATUS_MISMATCH'</span>
+    <span class="kw">WHEN</span> r.id <span class="kw">IS NULL</span>       <span class="kw">THEN</span> <span class="str">'MISSING_IN_PROVIDER'</span>
+    <span class="kw">ELSE</span> <span class="str">'OK'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> reconciliation_status
+<span class="kw">FROM</span> transactions t
+<span class="kw">LEFT JOIN</span> provider_reports r <span class="kw">ON</span> t.provider_ref = r.id
+<span class="kw">WHERE</span> t.created_at::date = <span class="fn">CURRENT_DATE</span> - 1</div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 4. ARQUITECTURA -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="arquitectura">
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2>Arquitectura Recomendada</h2>
+  </div>
+
+  <div class="alert alert-info">
+    <strong>Recomendación:</strong> Para volúmenes &lt; 50K tx/día, empieza con un monolito modular bien estructurado. Migra a microservicios cuando tengas equipos independientes y los dominios estén estables. El antipatrón más común es microservicios prematuros.
+  </div>
+
+  <h3>Diagrama de componentes</h3>
+
+  <div class="arch-layer" style="border-color: rgba(79,156,249,0.3);">
+    <div class="arch-layer-label" style="color: var(--accent);">CLIENTE / FRONTEND</div>
+    <div class="arch-nodes">
+      <div class="arch-node">Web SDK (JS)</div>
+      <div class="arch-node">Mobile SDK (iOS/Android)</div>
+      <div class="arch-node">Payment Page Hosted</div>
+    </div>
+  </div>
+  <div class="arch-arrow">↓ HTTPS / TLS 1.3</div>
+
+  <div class="arch-layer" style="border-color: rgba(16,185,129,0.3);">
+    <div class="arch-layer-label" style="color: var(--green);">API GATEWAY / EDGE</div>
+    <div class="arch-nodes">
+      <div class="arch-node highlight">Rate Limiting</div>
+      <div class="arch-node highlight">Auth (API Key / JWT)</div>
+      <div class="arch-node highlight">WAF / DDoS</div>
+      <div class="arch-node highlight">Idempotency</div>
+    </div>
+  </div>
+  <div class="arch-arrow">↓</div>
+
+  <div class="arch-layer" style="border-color: rgba(124,58,237,0.3);">
+    <div class="arch-layer-label" style="color: #a78bfa;">SERVICIOS CORE</div>
+    <div class="arch-nodes">
+      <div class="arch-node">Payment Service</div>
+      <div class="arch-node">Token Vault</div>
+      <div class="arch-node">Fraud Engine</div>
+      <div class="arch-node">Webhook Service</div>
+      <div class="arch-node">Notification</div>
+    </div>
+  </div>
+  <div class="arch-arrow">↓</div>
+
+  <div class="arch-layer" style="border-color: rgba(245,158,11,0.3);">
+    <div class="arch-layer-label" style="color: var(--amber);">CAPA DE DATOS</div>
+    <div class="arch-nodes">
+      <div class="arch-node">PostgreSQL (principal)</div>
+      <div class="arch-node">Redis (cache / idem)</div>
+      <div class="arch-node">S3 (auditoría)</div>
+      <div class="arch-node">Elasticsearch (logs)</div>
+    </div>
+  </div>
+  <div class="arch-arrow">↓</div>
+
+  <div class="arch-layer" style="border-color: rgba(239,68,68,0.3);">
+    <div class="arch-layer-label" style="color: var(--red);">PROVEEDORES EXTERNOS</div>
+    <div class="arch-nodes">
+      <div class="arch-node">Stripe / Adyen / Braintree</div>
+      <div class="arch-node">Redes: Visa / MC / AMEX</div>
+      <div class="arch-node">3DS: Worldline / Cardinal</div>
+      <div class="arch-node">Fraude: Kount / Sift</div>
+    </div>
+  </div>
+
+  <h3>Decisión: ¿Monolito o Microservicios?</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Criterio</th><th>Monolito Modular</th><th>Microservicios</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Equipo</strong></td><td>1–8 ingenieros</td><td>8+ ingenieros, múltiples equipos</td></tr>
+        <tr><td><strong>Volumen</strong></td><td>&lt; 100K tx/día</td><td>100K+ tx/día</td></tr>
+        <tr><td><strong>Time to market</strong></td><td>Rápido (2–4 meses)</td><td>Lento (6–12 meses setup)</td></tr>
+        <tr><td><strong>Complejidad operacional</strong></td><td>Baja</td><td>Alta (K8s, service mesh, tracing)</td></tr>
+        <tr><td><strong>Escalabilidad</strong></td><td>Vertical + horizontal limitado</td><td>Horizontal por servicio</td></tr>
+        <tr><td><strong>Recomendación</strong></td><td colspan="2">Empieza con monolito modular. Extrae microservicios cuando lo justifique la carga o el equipo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 5. SEGURIDAD -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="seguridad">
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2>Seguridad</h2>
+  </div>
+
+  <h3>PCI DSS — Lo más importante</h3>
+  <div class="alert alert-danger">
+    <strong>Nunca almacenes datos de tarjeta en tu base de datos propia</strong> (PAN completo, CVV, PIN). Es ilegal y te expone a multas de $100K–$500K por evento de brecha. Usa tokenización desde el primer día.
+  </div>
+
+  <div class="def-table">
+    <div class="def-row">
+      <div class="def-term">SAQ A</div>
+      <div class="def-body">
+        <strong>El más simple — usa hosted fields o redirección</strong>
+        Todo el pago ocurre en la infraestructura del proveedor. Tu servidor nunca toca datos de tarjeta. Self-assessment questionnaire de 22 preguntas.
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">SAQ A-EP</div>
+      <div class="def-body">
+        <strong>JavaScript propio en la página de pago</strong>
+        Tu dominio sirve el JS que captura los datos, aunque los envíes directo al proveedor. 191 preguntas. Requiere penetration testing anual.
+      </div>
+    </div>
+    <div class="def-row">
+      <div class="def-term">SAQ D / Level 1</div>
+      <div class="def-body">
+        <strong>Procesas o almacenas datos de tarjeta</strong>
+        Auditoría anual por QSA certificado. 300+ controles. Para procesadores propios, más de 6M tx/año, o si te lo exige tu adquirente.
+      </div>
+    </div>
+  </div>
+
+  <h3>Tokenización</h3>
+  <div class="code-block"><span class="cm">// Flujo correcto de tokenización con Stripe Elements</span>
+
+<span class="cm">// 1. Frontend: datos de tarjeta van DIRECTO a Stripe, nunca a tu servidor</span>
+<span class="kw">const</span> { paymentMethod, error } = <span class="kw">await</span> stripe.<span class="fn">createPaymentMethod</span>({
+  type: <span class="str">'card'</span>,
+  card: cardElement,      <span class="cm">// hosted field de Stripe</span>
+  billing_details: { name: <span class="str">'Juan García'</span> }
+});
+
+<span class="cm">// 2. Tu frontend envía SOLO el token a tu backend</span>
+<span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/v1/payments'</span>, {
+  body: JSON.<span class="fn">stringify</span>({
+    payment_method_id: paymentMethod.id,  <span class="cm">// ✅ token, no datos de tarjeta</span>
+    amount: 1000,
+    currency: <span class="str">'mxn'</span>,
+    idempotency_key: <span class="fn">uuid</span>()
+  })
+});
+
+<span class="cm">// 3. Tu backend usa el token para cobrar</span>
+<span class="cm">// El número de tarjeta NUNCA toca tu servidor</span></div>
+
+  <h3>Cifrado y transmisión segura</h3>
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-title">🔒 TLS 1.3 obligatorio</div>
+      <p>Deshabilitar TLS 1.0 y 1.1. Usar HSTS con <span class="tag-inline">max-age=31536000</span>. Certificate pinning en apps móviles. Renovación automática via Let's Encrypt o ACM.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 Cifrado en reposo</div>
+      <p>AES-256 para campos sensibles (emails, nombres en logs). Gestión de claves con AWS KMS, HashiCorp Vault o Azure Key Vault. Rotación trimestral de claves.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🛡️ Autenticación</div>
+      <p>API Keys con prefijo + hash (nunca almacenar el key original). JWT para sesiones de usuario con expiración corta (15 min). Refresh tokens con rotación.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Logs seguros</div>
+      <p>Nunca loguear PAN, CVV, contraseñas, tokens de sesión. Usar log scrubbing middleware. Logs inmutables en S3 con Object Lock. Retención mínima 12 meses.</p>
+    </div>
+  </div>
+
+  <h3>Prevención de fraude</h3>
+  <div class="flow-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <div class="step-title">3D Secure 2.x (3DS2)</div>
+      <p class="step-desc">Autenticación adicional del portador de la tarjeta. Obligatorio en Europa (PSD2/SCA). Reduce chargebacks porque el emisor asume la responsabilidad. Implementar con <span class="tag-inline">stripe.confirmPayment()</span> o equivalente.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <div class="step-title">Reglas de negocio propias</div>
+      <p class="step-desc">Velocidad por IP (máx. X intentos/hora), por tarjeta, por email. Bloqueo de países de alto riesgo. Umbral de monto sospechoso. BIN lookup para verificar país emisor vs. IP del comprador.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <div class="step-title">Motor de fraude externo</div>
+      <p class="step-desc">Kount, Sift, Signifyd o Stripe Radar. Machine learning sobre patrones de transacción. Score de riesgo por transacción. Configurar umbral de bloqueo y revisión manual.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <div class="step-title">Device fingerprinting</div>
+      <p class="step-desc">Recopilar device ID, user agent, IP, geolocalización, tiempo de sesión. Vincular dispositivo a historial de transacciones. Alertar si el mismo device usa múltiples tarjetas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 6. CUMPLIMIENTO LEGAL -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="cumplimiento">
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2>Cumplimiento Legal y Normativo</h2>
+  </div>
+
+  <div class="alert alert-danger">
+    <strong>Antes de procesar un solo peso/dólar:</strong> Consulta un abogado especialista en derecho financiero de tu país. Esta guía es referencia técnica, no asesoría legal.
+  </div>
+
+  <h3>Normas principales por región</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Región</th><th>Norma</th><th>Qué regula</th><th>Obligatorio si...</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Global</strong></td>
+          <td><span class="tag-inline">PCI DSS v4.0</span></td>
+          <td>Manejo de datos de tarjetas</td>
+          <td>Procesas cualquier tarjeta Visa/MC/AMEX</td>
+        </tr>
+        <tr>
+          <td><strong>Europa</strong></td>
+          <td><span class="tag-inline">PSD2 + SCA</span></td>
+          <td>Autenticación fuerte, APIs bancarias abiertas</td>
+          <td>Operas en la UE/EEA</td>
+        </tr>
+        <tr>
+          <td><strong>Europa</strong></td>
+          <td><span class="tag-inline">GDPR</span></td>
+          <td>Datos personales de ciudadanos UE</td>
+          <td>Procesas datos de europeos</td>
+        </tr>
+        <tr>
+          <td><strong>México</strong></td>
+          <td><span class="tag-inline">LFPDPPP + CNBV</span></td>
+          <td>Datos personales, licencias fintech</td>
+          <td>Operas como ITF (Ley Fintech 2018)</td>
+        </tr>
+        <tr>
+          <td><strong>Brasil</strong></td>
+          <td><span class="tag-inline">LGPD + BACEN</span></td>
+          <td>Datos personales, regulación de pagos</td>
+          <td>Operas como IP (Instituição de Pagamento)</td>
+        </tr>
+        <tr>
+          <td><strong>EE.UU.</strong></td>
+          <td><span class="tag-inline">BSA / AML + FinCEN</span></td>
+          <td>Anti-lavado, KYC obligatorio</td>
+          <td>Eres MSB (Money Service Business)</td>
+        </tr>
+        <tr>
+          <td><strong>Global</strong></td>
+          <td><span class="tag-inline">FATF / GAFI</span></td>
+          <td>Anti-lavado internacional</td>
+          <td>Procesas pagos internacionales</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>KYC / AML — Conoce a tu cliente</h3>
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-title">🪪 KYC Básico (onboarding)</div>
+      <p>Verificación de identidad: nombre, documento oficial, selfie + liveness check. Validación contra listas OFAC/SDN. Herramientas: Jumio, Onfido, Truora (LATAM).</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🚨 AML — Monitoreo continuo</div>
+      <p>Perfiles de transacción por cliente. Detección de structuring (dividir grandes pagos). Reportes de operaciones sospechosas (SAR/ROS). Conservar registros 5+ años.</p>
+    </div>
+  </div>
+
+  <h3>Riesgos legales críticos</h3>
+  <div class="alert alert-warning">
+    <strong>Chargebacks excesivos:</strong> Si superas el 1% de chargebacks (Visa) o 0.9% (Mastercard), tu cuenta merchant puede ser suspendida o dada de alta en programas de monitoreo que incrementan costos significativamente.
+  </div>
+  <div class="alert alert-warning">
+    <strong>Sin licencia de procesamiento:</strong> En la mayoría de países, procesar pagos de terceros sin una licencia de institución de pago es ilegal. Si solo cobras para tu propio negocio, el umbral es diferente.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 7. BASE DE DATOS -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="basedatos">
+  <div class="section-header">
+    <span class="section-number">07</span>
+    <h2>Base de Datos</h2>
+  </div>
+
+  <h3>Tabla: transactions (núcleo del sistema)</h3>
+  <div class="db-table">
+    <div class="db-table-header">transactions</div>
+    <div class="db-row"><div class="db-cell">id <span class="pk">PK</span></div><div class="db-cell"><span class="type">UUID</span></div><div class="db-cell">Identificador único, no secuencial</div></div>
+    <div class="db-row"><div class="db-cell">idempotency_key</div><div class="db-cell"><span class="type">VARCHAR(128)</span></div><div class="db-cell">Único por merchant, evita duplicados</div></div>
+    <div class="db-row"><div class="db-cell">merchant_id <span class="fk">FK</span></div><div class="db-cell"><span class="type">UUID</span></div><div class="db-cell">Comercio que generó el pago</div></div>
+    <div class="db-row"><div class="db-cell">customer_id <span class="fk">FK</span></div><div class="db-cell"><span class="type">UUID</span></div><div class="db-cell">Comprador (nullable si es guest)</div></div>
+    <div class="db-row"><div class="db-cell">amount</div><div class="db-cell"><span class="type">BIGINT</span></div><div class="db-cell">Centavos/céntimos. NUNCA float.</div></div>
+    <div class="db-row"><div class="db-cell">currency</div><div class="db-cell"><span class="type">CHAR(3)</span></div><div class="db-cell">ISO 4217: MXN, USD, EUR, BRL</div></div>
+    <div class="db-row"><div class="db-cell">status</div><div class="db-cell"><span class="type">ENUM</span></div><div class="db-cell">created, authorized, captured, settled, failed, refunded, disputed, cancelled</div></div>
+    <div class="db-row"><div class="db-cell">payment_method</div><div class="db-cell"><span class="type">JSONB</span></div><div class="db-cell">Tipo, últimos 4 dígitos, marca. SIN PAN completo.</div></div>
+    <div class="db-row"><div class="db-cell">provider</div><div class="db-cell"><span class="type">VARCHAR(32)</span></div><div class="db-cell">stripe, braintree, adyen, conekta...</div></div>
+    <div class="db-row"><div class="db-cell">provider_ref</div><div class="db-cell"><span class="type">VARCHAR(256)</span></div><div class="db-cell">ID de la transacción en el proveedor</div></div>
+    <div class="db-row"><div class="db-cell">fraud_score</div><div class="db-cell"><span class="type">DECIMAL(4,2)</span></div><div class="db-cell">Score 0–100 del motor anti-fraude</div></div>
+    <div class="db-row"><div class="db-cell">metadata</div><div class="db-cell"><span class="type">JSONB</span></div><div class="db-cell">Datos customizados del merchant</div></div>
+    <div class="db-row"><div class="db-cell">created_at</div><div class="db-cell"><span class="type">TIMESTAMPTZ</span></div><div class="db-cell">Siempre en UTC</div></div>
+    <div class="db-row"><div class="db-cell">updated_at</div><div class="db-cell"><span class="type">TIMESTAMPTZ</span></div><div class="db-cell">Actualización automática vía trigger</div></div>
+    <div class="db-row"><div class="db-cell">captured_at</div><div class="db-cell"><span class="type">TIMESTAMPTZ</span></div><div class="db-cell">Momento exacto de captura</div></div>
+  </div>
+
+  <div class="alert alert-warning">
+    <strong>Sobre monedas:</strong> Siempre almacena montos como BIGINT en la unidad mínima (centavos). <code>$10.50 MXN = 1050</code>. Los floats causan errores de redondeo en acumulados. La suma de 1000 transacciones de $0.10 en float ≠ $100.00 exacto.
+  </div>
+
+  <h3>Otras tablas esenciales</h3>
+  <div class="cards-grid-3">
+    <div class="card">
+      <div class="card-title">payment_tokens</div>
+      <p>token_id, customer_id, last4, brand, expiry_month, expiry_year, provider_token, is_default, created_at. Nunca el PAN.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">transaction_events</div>
+      <p>Audit log inmutable. id, transaction_id, event_type, data (JSONB), source (webhook/api/system), created_at. Append-only, sin UPDATE/DELETE.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">refunds</div>
+      <p>id, transaction_id FK, amount, reason, status, provider_ref, requested_by, processed_at. Vinculada a la transacción original.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">disputes / chargebacks</div>
+      <p>id, transaction_id FK, amount, reason_code, status, due_date, evidence (JSONB), resolved_at. Workflow de respuesta a disputas.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">webhook_events</div>
+      <p>id, provider, event_id, event_type, payload (JSONB), processed_at, status. Para deduplicación y auditoría.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">settlements</div>
+      <p>id, merchant_id, period_start, period_end, gross_amount, fees, net_amount, status, payout_date. Conciliación de liquidaciones.</p>
+    </div>
+  </div>
+
+  <h3>Estados de transacción</h3>
+  <div class="code-block"><span class="cm">-- Máquina de estados válida (PostgreSQL CHECK constraint)</span>
+<span class="kw">ALTER TABLE</span> transactions <span class="kw">ADD CONSTRAINT</span> valid_status_transition
+  <span class="kw">CHECK</span> (status <span class="kw">IN</span> (
+    <span class="str">'created'</span>,     <span class="cm">-- Pago iniciado, aún no enviado al proveedor</span>
+    <span class="str">'authorized'</span>,  <span class="cm">-- Fondos reservados, pendiente de captura</span>
+    <span class="str">'captured'</span>,    <span class="cm">-- Capturado, fondos en tránsito</span>
+    <span class="str">'settled'</span>,     <span class="cm">-- Liquidado, fondos en merchant account</span>
+    <span class="str">'failed'</span>,      <span class="cm">-- Rechazado por emisor o error</span>
+    <span class="str">'cancelled'</span>,   <span class="cm">-- Cancelado antes de captura</span>
+    <span class="str">'refunded'</span>,    <span class="cm">-- Devuelto total o parcialmente</span>
+    <span class="str">'disputed'</span>     <span class="cm">-- Chargeback abierto por el cliente</span>
+  ));</div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 8. FLUJO DE PAGOS -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="flujo">
+  <div class="section-header">
+    <span class="section-number">08</span>
+    <h2>Flujo Completo de una Compra</h2>
+  </div>
+
+  <h3>Flujo paso a paso: compra con tarjeta</h3>
+
+  <div class="flow-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <div class="step-title">Cliente llena el formulario de pago</div>
+      <p class="step-desc">El hosted field de Stripe/Braintree captura los datos de la tarjeta dentro de un iframe. El PAN nunca toca tu dominio. Tu JS obtiene un <span class="tag-inline">paymentMethodId</span>.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <div class="step-title">Frontend → Tu API: /v1/payments</div>
+      <p class="step-desc">POST con <span class="tag-inline">{ amount, currency, payment_method_id, idempotency_key, metadata }</span>. Header: <span class="tag-inline">Idempotency-Key: uuid-v4</span>. Tu backend valida y crea registro <span class="badge badge-blue">created</span> en DB.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <div class="step-title">Motor anti-fraude</div>
+      <p class="step-desc">Score de riesgo en &lt;200ms. Si score &gt; umbral → declinar o solicitar 3DS. Verificar velocidad (intentos por IP, tarjeta, email en las últimas N horas).</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <div class="step-title">Enviar al proveedor de pagos</div>
+      <p class="step-desc">Llamada a Stripe/Adyen con el token. Si requiere 3DS, devolver al cliente para autenticación. El proveedor enruta a través de Visa/MC al banco emisor.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <div class="step-title">Banco emisor responde</div>
+      <p class="step-desc">Aprobado: código de autorización. Rechazado: código de rechazo (fondos insuficientes, tarjeta bloqueada, etc.). Timeout: tratar como pendiente, no como error.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">6</div>
+    <div class="step-content">
+      <div class="step-title">Actualizar estado en DB + responder al cliente</div>
+      <p class="step-desc">Estado → <span class="badge badge-green">captured</span> o <span class="badge badge-red">failed</span>. Registrar evento en <span class="tag-inline">transaction_events</span>. Responder al frontend con el resultado. Si aprobado: disparar fulfillment.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">7</div>
+    <div class="step-content">
+      <div class="step-title">Webhook del proveedor (confirmación asíncrona)</div>
+      <p class="step-desc">El proveedor envía <span class="tag-inline">payment.succeeded</span> o <span class="tag-inline">payment.failed</span>. Verificar firma. Deduplicar por event_id. Si el estado difiere del local → reconciliar.</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">8</div>
+    <div class="step-content">
+      <div class="step-title">Liquidación (D+1 / D+2)</div>
+      <p class="step-desc">El adquirente agrupa las transacciones del día y transfiere el neto (monto bruto - comisiones) a tu merchant account. Registrar en <span class="tag-inline">settlements</span>.</p>
+    </div>
+  </div>
+
+  <h3>Tipos de integración soportados</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tipo</th><th>Implementación</th><th>Consideración especial</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tarjeta crédito/débito</strong></td>
+          <td>Hosted fields + tokenización</td>
+          <td>3DS2 obligatorio UE, recomendado global</td>
+        </tr>
+        <tr>
+          <td><strong>Suscripciones</strong></td>
+          <td>Token guardado + cobro recurrente</td>
+          <td>Gestión de dunning (reintentos por fallo), notificación pre-renovación</td>
+        </tr>
+        <tr>
+          <td><strong>Links de pago</strong></td>
+          <td>Página hosted del proveedor</td>
+          <td>PCI SAQ A. Ideal para cobros únicos sin integración técnica</td>
+        </tr>
+        <tr>
+          <td><strong>Wallets (Apple/Google Pay)</strong></td>
+          <td>Payment Request API + SDK</td>
+          <td>Requiere dominio verificado. Tokenización automática del dispositivo</td>
+        </tr>
+        <tr>
+          <td><strong>Transferencias bancarias</strong></td>
+          <td>SPEI (MX), PIX (BR), SEPA (EU), ACH (US)</td>
+          <td>Sin chargeback pero mayor latencia (minutos a días)</td>
+        </tr>
+        <tr>
+          <td><strong>Reembolsos</strong></td>
+          <td>POST /v1/refunds con transaction_id</td>
+          <td>Parciales o totales. Plazo máximo varía (generalmente 180 días)</td>
+        </tr>
+        <tr>
+          <td><strong>Contracargos</strong></td>
+          <td>Workflow de disputas con evidencia</td>
+          <td>Tienes 7–20 días para responder según la red. Automatiza la recopilación de evidencia</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 9. CASOS DE ERROR -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="errores">
+  <div class="section-header">
+    <span class="section-number">09</span>
+    <h2>Casos de Error y Manejo</h2>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-green">APROBADO</span>
+      <strong style="color: var(--text); font-size: 14px;">payment.succeeded</strong>
+    </div>
+    <div class="error-body">
+      <p>Estado → captured. Disparar fulfillment (envío, activar acceso, etc.). Enviar recibo al cliente.</p>
+      <p class="error-action">→ Registrar evento. Actualizar inventario si aplica. Logging de éxito.</p>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-red">RECHAZADO</span>
+      <strong style="color: var(--text); font-size: 14px;">insufficient_funds / card_declined / do_not_honor</strong>
+    </div>
+    <div class="error-body">
+      <p>Estado → failed. <strong>NO reintentar automáticamente</strong>. Devolver mensaje amigable al usuario (no el código técnico del banco).</p>
+      <p class="error-action">→ Sugerir otro método de pago. Log del código de rechazo para análisis. NO exponer: "do_not_honor" → mostrar "Tarjeta no autorizada".</p>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-amber">PENDIENTE</span>
+      <strong style="color: var(--text); font-size: 14px;">payment.pending / processing</strong>
+    </div>
+    <div class="error-body">
+      <p>Estado → authorized o processing. Nunca entregar el producto aún. Esperar webhook de confirmación.</p>
+      <p class="error-action">→ Mostrar "Pago en proceso". Job de polling cada 5 min para transacciones pendientes &gt; 30 min. Timeout máximo: 24h.</p>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-red">TIMEOUT</span>
+      <strong style="color: var(--text); font-size: 14px;">La llamada al proveedor excede el tiempo límite</strong>
+    </div>
+    <div class="error-body">
+      <p>Estado → pending. <strong>NUNCA marcar como fallido un timeout</strong>. El cobro pudo haberse realizado en el proveedor.</p>
+      <p class="error-action">→ Consultar estado vía API con el provider_ref. Si no existe: crear nuevo pago con nueva idempotency_key. Si existe: sincronizar estado.</p>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-amber">WEBHOOK DUPLICADO</span>
+      <strong style="color: var(--text); font-size: 14px;">Mismo event_id recibido N veces</strong>
+    </div>
+    <div class="error-body">
+      <p>Los proveedores pueden re-enviar webhooks si no reciben 200 OK. Normal en alta disponibilidad.</p>
+      <p class="error-action">→ Lookup en webhook_events por event_id. Si existe: responder 200 y no procesar. Si no: insertar y procesar. Operación debe ser idempotente.</p>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-red">FRAUDE DETECTADO</span>
+      <strong style="color: var(--text); font-size: 14px;">Score alto / patrones anómalos</strong>
+    </div>
+    <div class="error-body">
+      <p>No revelar al cliente que fue detectado como fraude. Declinación genérica para no educar al atacante.</p>
+      <p class="error-action">→ Bloquear temporalmente IP/email. Alertar equipo de riesgo. Conservar evidencia. Escalar a manual review si el score está en zona gris.</p>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header">
+      <span class="badge badge-amber">CHARGEBACK / CONTRACARGO</span>
+      <strong style="color: var(--text); font-size: 14px;">Cliente disputó el cargo ante su banco</strong>
+    </div>
+    <div class="error-body">
+      <p>El proveedor te notifica via webhook. Tienes un plazo para presentar evidencia (7–20 días).</p>
+      <p class="error-action">→ Congelar reembolsos sobre la transacción. Recopilar: comprobante de entrega, logs de acceso, comunicaciones con el cliente, IP del dispositivo. Responder dentro del plazo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 10. STACK TECNOLÓGICO -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="stack">
+  <div class="section-header">
+    <span class="section-number">10</span>
+    <h2>Stack Tecnológico Recomendado</h2>
+  </div>
+
+  <h3>Backend</h3>
+  <div class="stack-item">
+    <div class="stack-icon" style="background: rgba(16,185,129,0.1);">🟢</div>
+    <div class="stack-info">
+      <div class="stack-name">Node.js + TypeScript / Go</div>
+      <div class="stack-why">Node para velocidad de desarrollo; Go para latencia extrema y alto throughput. Ambos excelentes para I/O bound (pagos son casi todo I/O).</div>
+    </div>
+    <div class="stack-meta">Recomendado</div>
+  </div>
+  <div class="stack-item">
+    <div class="stack-icon" style="background: rgba(124,58,237,0.1);">🟣</div>
+    <div class="stack-info">
+      <div class="stack-name">Python (FastAPI) / Java (Spring Boot)</div>
+      <div class="stack-why">Alternativas sólidas. Python para equipos con más experiencia en ML (fraud detection). Java para equipos enterprise con expertise en JVM.</div>
+    </div>
+    <div class="stack-meta">Alternativa</div>
+  </div>
+
+  <h3>Base de datos</h3>
+  <div class="stack-item">
+    <div class="stack-icon" style="background: rgba(79,156,249,0.1);">🐘</div>
+    <div class="stack-info">
+      <div class="stack-name">PostgreSQL 16+</div>
+      <div class="stack-why">ACID completo, JSONB para metadata flexible, particionamiento por fecha para transacciones, extensiones (pgcrypto para cifrado en DB). RDS/Aurora en AWS o Cloud SQL en GCP.</div>
+    </div>
+    <div class="stack-meta">Obligatorio</div>
+  </div>
+  <div class="stack-item">
+    <div class="stack-icon" style="background: rgba(239,68,68,0.1);">🔴</div>
+    <div class="stack-info">
+      <div class="stack-name">Redis 7+</div>
+      <div class="stack-why">Idempotency keys, rate limiting distribuido, caché de sesiones, colas de webhooks, circuit breaker state. ElastiCache en AWS.</div>
+    </div>
+    <div class="stack-meta">Obligatorio</div>
+  </div>
+
+  <h3>Infraestructura</h3>
+  <div class="stack-item">
+    <div class="stack-icon" style="background: rgba(245,158,11,0.1);">☁️</div>
+    <div class="stack-info">
+      <div class="stack-name">AWS / GCP / Azure</div>
+      <div class="stack-why">AWS más maduro para fintech. VPC privada, Security Groups, KMS para claves, CloudTrail para auditoría, WAF, Shield para DDoS. Evitar multi-cloud en v1.</div>
+    </div>
+    <div class="stack-meta">Recomendado</div>
+  </div>
+  <div class="stack-item">
+    <div class="stack-icon" style="background: rgba(20,184,166,0.1);">🐳</div>
+    <div class="stack-info">
+      <div class="stack-name">Docker + Kubernetes (EKS/GKE)</div>
+      <div class="stack-why">Contenedores para reproducibilidad. K8s para escalar payment workers independientemente. En volúmenes bajos: ECS Fargate es más simple.</div>
+    </div>
+    <div class="stack-meta">Escala media+</div>
+  </div>
+
+  <h3>Proveedores de pago recomendados</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Proveedor</th><th>Mejor para</th><th>Comisión aprox.</th><th>Nota</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Stripe</strong></td><td>Global, SaaS, startups</td><td>2.9% + $0.30</td><td>La mejor DX. Radar anti-fraude incluido.</td></tr>
+        <tr><td><strong>Adyen</strong></td><td>Enterprise, marketplaces</td><td>Variable (bajo volumen)</td><td>Más control, implementación más compleja.</td></tr>
+        <tr><td><strong>Braintree</strong></td><td>PayPal + tarjetas</td><td>2.59% + $0.49</td><td>Propiedad de PayPal. Buena para integrar wallet PayPal.</td></tr>
+        <tr><td><strong>Conekta / OpenPay</strong></td><td>México</td><td>2.9%–3.6%</td><td>OXXO, SPEI nativo. Para el mercado mexicano.</td></tr>
+        <tr><td><strong>PagSeguro / Stripe BR</strong></td><td>Brasil</td><td>Variable</td><td>PIX nativo. Stripe ya opera en Brasil desde 2023.</td></tr>
+        <tr><td><strong>Wompi / PSE</strong></td><td>Colombia</td><td>Variable</td><td>PSE (transferencias) muy usado en CO.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 11. PLAN DE IMPLEMENTACIÓN -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="plan">
+  <div class="section-header">
+    <span class="section-number">11</span>
+    <h2>Plan de Implementación por Fases</h2>
+  </div>
+
+  <h3>Recursos humanos necesarios</h3>
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-title">Equipo mínimo viable (MVP)</div>
+      <p>1 backend senior (Fintech), 1 frontend mid, 1 DevOps/infra, 1 QA. Budget: $15K–$40K/mes en salarios (depende del país).</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Equipo para escalar</div>
+      <p>+1 especialista en seguridad/PCI, +1 data analyst (fraude/conciliación), +1 backend mid, 1 PM. Budget: $50K–$120K/mes.</p>
+    </div>
+  </div>
+
+  <h3>Timeline</h3>
+
+  <div class="phase">
+    <div>
+      <div class="phase-label">FASE 1</div>
+      <div class="phase-weeks">Semanas 1–4</div>
+    </div>
+    <div>
+      <h4>Fundaciones técnicas y legales</h4>
+      <ul>
+        <li>Consulta legal: licencias, estructura societaria, merchant account</li>
+        <li>Setup de infraestructura (VPC, DB, Redis, CI/CD)</li>
+        <li>Dominio del modelo de datos y máquina de estados</li>
+        <li>Integración básica con proveedor elegido (sandbox)</li>
+        <li>Autenticación, logging, monitoreo base</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div>
+      <div class="phase-label">FASE 2</div>
+      <div class="phase-weeks">Semanas 5–10</div>
+    </div>
+    <div>
+      <h4>Core de pagos</h4>
+      <ul>
+        <li>Flujo completo: crear pago, captura, rechazo</li>
+        <li>Idempotencia y manejo de estados robusto</li>
+        <li>Webhooks: recepción, verificación, deduplicación</li>
+        <li>Tokenización y guardado de tarjetas</li>
+        <li>Panel básico de merchant (transacciones, estados)</li>
+        <li>Tests de integración end-to-end con sandbox</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div>
+      <div class="phase-label">FASE 3</div>
+      <div class="phase-weeks">Semanas 11–16</div>
+    </div>
+    <div>
+      <h4>Seguridad y cumplimiento</h4>
+      <ul>
+        <li>Penetration testing (externo)</li>
+        <li>Revisión PCI DSS (SAQ A o A-EP)</li>
+        <li>3D Secure 2.x en flujo de tarjetas</li>
+        <li>Motor anti-fraude: reglas básicas + integración Stripe Radar</li>
+        <li>KYC básico para onboarding de merchants</li>
+        <li>Reembolsos y gestión de disputas</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div>
+      <div class="phase-label">FASE 4</div>
+      <div class="phase-weeks">Semanas 17–22</div>
+    </div>
+    <div>
+      <h4>Métodos adicionales y optimización</h4>
+      <ul>
+        <li>Suscripciones + dunning management</li>
+        <li>Transferencias bancarias (SPEI/PIX/ACH según mercado)</li>
+        <li>Apple Pay / Google Pay</li>
+        <li>Dashboard de conciliación</li>
+        <li>Load testing y optimización de latencia</li>
+        <li>Runbooks de incidentes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div>
+      <div class="phase-label">FASE 5</div>
+      <div class="phase-weeks">Semanas 23–26</div>
+    </div>
+    <div>
+      <h4>Preparación para producción</h4>
+      <ul>
+        <li>Revisión final de seguridad</li>
+        <li>Certificación PCI (si aplica)</li>
+        <li>Simulación de incidentes (chaos engineering básico)</li>
+        <li>Configuración de alertas y on-call</li>
+        <li>Documentación de API pública</li>
+        <li>Soft launch con volumen controlado</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Costos aproximados de infraestructura (mensual)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Componente</th><th>Early stage (&lt;10K tx/mes)</th><th>Growth (100K tx/mes)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>DB (RDS PostgreSQL)</strong></td><td>$50–$150</td><td>$300–$800</td></tr>
+        <tr><td><strong>Redis (ElastiCache)</strong></td><td>$30–$80</td><td>$150–$400</td></tr>
+        <tr><td><strong>Compute (ECS/EKS)</strong></td><td>$100–$300</td><td>$500–$2,000</td></tr>
+        <tr><td><strong>CDN + WAF</strong></td><td>$50–$100</td><td>$200–$500</td></tr>
+        <tr><td><strong>Monitoring (Datadog)</strong></td><td>$200–$400</td><td>$800–$2,000</td></tr>
+        <tr><td><strong>Total infra</strong></td><td><strong>~$430–$1,030</strong></td><td><strong>~$1,950–$5,700</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 12. CHECKLIST FINAL -->
+<!-- ══════════════════════════════════════════ -->
+<section class="section" id="checklist">
+  <div class="section-header">
+    <span class="section-number">12</span>
+    <h2>Checklist de Producción</h2>
+  </div>
+
+  <p>Haz clic en cada ítem para marcarlo como completado.</p>
+
+  <h3>🔒 Seguridad</h3>
+  <ul class="checklist" id="check-security">
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>TLS 1.3 habilitado, TLS 1.0/1.1 deshabilitado en todos los endpoints</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>HSTS configurado con max-age mínimo de 1 año</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Nunca se almacena PAN, CVV, ni PIN en ningún log o base de datos propia</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Tokenización implementada desde el primer pago</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Firmas de webhooks verificadas (HMAC-SHA256)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>API Keys hasheadas en base de datos (nunca en claro)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Rate limiting por IP y por API key configurado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Penetration test externo completado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Gestión de secretos con KMS/Vault (sin secretos en código)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>WAF configurado con reglas OWASP</li>
+  </ul>
+
+  <h3>💳 Pagos y flujo</h3>
+  <ul class="checklist" id="check-payments">
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Idempotencia implementada y probada con reintentos concurrentes</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Máquina de estados implementada con transiciones válidas</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Manejo correcto de timeouts (no marcar como failed)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Deduplicación de webhooks con event_id</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Montos almacenados como enteros (centavos), nunca float</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Reembolsos implementados y probados</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Flujo de disputas/chargebacks con workflow de evidencia</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>3D Secure 2.x implementado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Conciliación diaria automatizada y con alertas</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Load test: sistema resiste 10x el volumen esperado</li>
+  </ul>
+
+  <h3>⚖️ Legal y cumplimiento</h3>
+  <ul class="checklist" id="check-legal">
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>PCI DSS SAQ completado y firmado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Merchant account activa y verificada con adquirente</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>KYC implementado para onboarding de merchants (si eres plataforma)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Política de privacidad actualizada (GDPR/LGPD/LFPDPPP según mercado)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Términos y condiciones revisados por abogado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Retención de registros configurada (mínimo 5 años para datos financieros)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Proceso de respuesta a chargebacks documentado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Licencias requeridas obtenidas según el país</li>
+  </ul>
+
+  <h3>🛠️ Infraestructura y operación</h3>
+  <ul class="checklist" id="check-infra">
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Backups automáticos de DB con prueba de restore exitosa</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Monitoring y alertas configurados (latencia, error rate, disponibilidad)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>On-call definido con runbooks para incidentes</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Logs inmutables en S3/almacenamiento audit</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Disaster recovery plan documentado y probado</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Deploy sin downtime (blue-green o rolling)</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Feature flags para habilitar/deshabilitar métodos de pago en caliente</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Entornos de sandbox y producción completamente separados</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>Rotación automática de credenciales del proveedor</li>
+  </ul>
+
+  <h3>🚫 Errores comunes a evitar</h3>
+  <ul class="checklist" id="check-avoid">
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No exponer códigos de error internos al cliente final</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No reintenter automáticamente pagos rechazados por el emisor</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No entregar producto sin confirmar el estado del pago vía webhook</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No usar el mismo secret de webhooks entre entornos</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No confiar solo en la respuesta síncrona del proveedor</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No olvidar manejar el caso de webhook después de timeout</li>
+    <li><span class="check-icon" onclick="toggleCheck(this)"></span>No aceptar el primer pago sin validar end-to-end en producción</li>
+  </ul>
+
+  <div id="progress-bar" style="margin-top: 24px; padding: 20px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+      <span style="color: var(--muted);">Progreso total</span>
+      <span id="progress-text" style="color: var(--accent); font-family: var(--mono);">0 / 44</span>
+    </div>
+    <div style="height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden;">
+      <div id="progress-fill" style="height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.3s;"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <span>Guía Pasarela de Pagos · Arquitectura Senior</span>
+  <span>Referencia técnica profesional · No es asesoría legal o financiera</span>
+</footer>
+
+<script>
+function toggleCheck(el) {
+  const li = el.parentElement;
+  el.classList.toggle('done');
+  li.classList.toggle('done-item');
+  if (el.classList.contains('done')) el.textContent = '✓';
+  else el.textContent = '';
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = document.querySelectorAll('.check-icon').length;
+  const done = document.querySelectorAll('.check-icon.done').length;
+  document.getElementById('progress-text').textContent = done + ' / ' + total;
+  document.getElementById('progress-fill').style.width = (done/total*100) + '%';
+}
+
+// Active nav highlighting
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const id = entry.target.id;
+      const active = document.querySelector(`.nav-item[href="#${id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
